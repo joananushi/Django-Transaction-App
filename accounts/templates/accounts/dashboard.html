@@ -1,0 +1,10 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+
+<h1>dashboard</h1>
+{% for u in users%}
+{{u.first_name}}
+{% endfor%}
+
+{%  endblock %}

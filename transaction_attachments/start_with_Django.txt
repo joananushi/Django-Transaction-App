@@ -1,0 +1,52 @@
+
+python -m venv djangoPy3Env
+call djangoPy3Env\Scripts\activate
+pip install Django==4.2.5
+
+django-admin startproject new_project
+python manage.py startapp your_app_name_here
+
+python manage.py runserver
+
+
+python -m venv venv
+venv\Scripts\activate
+
+
+User.objects.create(first_name='Jane', last_name='Doe', email='janedoe@gmail.com', password='12345678', admin=1)
+Migrations:
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+
+python manage.py shell
+from your_app.models import the_model or from your_app_name_here.models import *
+the_model.objects.all()
+the_model.objects.create(name="", age="")
+the_model.objects.first()
+ClassName.objects.get(id=1) gets the record in the table with the specified id
+Displaying records
+the_model.objects.first().__dict__
+ClassName.objects.all().values() - shows all the values of a QuerySet (i.e. multiple instances)
+Ordering records
+ClassName.objects.all().order_by("field_name") - orders by field provided, ascending
+ClassName.objects.all().order_by("-field_name") - orders by field provided, descending
+Filter:
+Movie.objects.filter(release_date='2018-11-16')
+exlude:
+Movie.objects.exclude(release_date='2018-11-16')
+
+python manage.py createsuperuser
+This command allows you to create a superuser account for your application's admin interface. 
+Superusers have access to the admin site and can perform administrative tasks.
+
+Updating an existing record
+c = ClassName.objects.get(id=1)
+c.field_name = "some new value for field_name"
+c.save()
+Deleting an existing record
+c = ClassName.objects.get(id=1)
+c.delete()
+
+def __repr__(self):
+ return "name: {}".format(self.name)

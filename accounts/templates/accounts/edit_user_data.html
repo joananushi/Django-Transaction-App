@@ -1,0 +1,33 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+  <h2>Edit User Profile</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="username">User Name:</label>
+        <input type="text" name="username" id="username" value="{{ user.username }}" class="form-control">
+      </div>
+    <div class="form-group">
+      <label for="first_name">First Name:</label>
+      <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="last_name">Last Name:</label>
+      <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}" class="form-control">
+    </div>
+ 
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+  <a href="{% url 'user_profile' pk=user.id %}" class="btn btn-secondary mt-3">Cancel</a>
+
+  <hr>
+  <h2>Delete User Account</h2>
+  <p>If you want to delete your user account, click the button below:</p>
+  <form method="POST" action="{% url 'delete_user' pk=user.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete My Account</button>
+  </form>
+  
+{% endblock %}
+

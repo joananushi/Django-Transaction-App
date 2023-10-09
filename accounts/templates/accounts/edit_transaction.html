@@ -1,0 +1,51 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+
+    <h1>Edit Transaction</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label for="id_amount">Amount:</label>
+            <input type="number" step="0.01" name="amount" id="id_amount" value="{{ form.amount.value }}">
+        </div>
+        <div>
+            <label for="id_description">Description:</label>
+            <input type="text" name="description" id="id_description" value="{{ form.description.value }}">
+        </div>
+        <div>
+            <label for="id_category">Category:</label>
+            <input type="text" name="category" id="id_category" value="{{ form.category.value }}">
+        </div>
+        <div>
+            <label for="id_payment_method">Payment Method:</label>
+            <input type="text" name="payment_method" id="id_payment_method" value="{{ form.payment_method.value }}">
+        </div>
+        <div>
+            <label for="id_reference_number">Reference Number:</label>
+            <input type="text" name="reference_number" id="id_reference_number" value="{{ form.reference_number.value }}">
+        </div>
+        <div>
+            <label for="id_attachments">Attachments:</label>
+            <input type="file" name="attachments" id="id_attachments" value="{{ form.attachments.value }}">
+        </div>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="{% url 'usertransactions' %}">Cancel</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+{%  endblock %}
