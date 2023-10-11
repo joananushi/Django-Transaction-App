@@ -4,7 +4,7 @@
 
 <h1>Make a Transaction</h1>
 
-    <form method="post">
+    <form method="post" action="{% url 'make_transaction' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Submit</button>
