@@ -47,5 +47,5 @@ class Transaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
 class payer_payee(models.Model):
-    user= models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user= models.ForeignKey(User, on_delete=models.CASCADE)
     trasaction=models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True)

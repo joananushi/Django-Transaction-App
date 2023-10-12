@@ -17,7 +17,6 @@ from datetime import datetime, timedelta
 
 
 @login_required(login_url='login_view')
-
 def dashboard(request):
     users = User.objects.all()
     context={'users': users}
@@ -25,15 +24,15 @@ def dashboard(request):
     return render(request, 'accounts/dashboard.html', context )
 
 def usertransactions(request, pk):
-    logged_user = User.objects.get(id=pk)
-    transactions = Transaction.objects.filter(user=logged_user)
+    user = User.objects.get(id=pk)
+    transactions = Transaction.objects.filter(user=user)
 
     context = {
-        'user': logged_user,
+        'user': user,
         'transactions': transactions,
     }
 
-    return render(request, 'user_transactions.html', context)
+    return render(request, 'accounts/user_transactions.html', context)
 
 def make_transaction(request):
     if request.method == 'POST':
@@ -42,12 +41,17 @@ def make_transaction(request):
             transaction = form.save(commit=False)
             transaction.user = request.user
             transaction.save()
-            return redirect('usertransactions', pk=request.user.id)
-    else:
-        form = TransactionForm()
+            return redirect('usertransactions')
+        else:
+            form_errors = form.errors
+            print(form_errors)
+            
+        
+    form = TransactionForm()
 
     context = {'form': form}
-    return render(request, 'make_transaction.html', context)
+    return render(request, 'accounts/make_transaction.html', context)
+
 
 
 @login_required
@@ -65,7 +69,7 @@ def edit_transaction(request, transaction_id):
             form = TransactionForm(instance=transaction)
 
         context = {'form': form}
-        return render(request, 'edit_transaction.html', context)
+        return render(request, 'accounts/edit_transaction.html', context)
     else:
         return redirect('list_transactions')
 
@@ -77,7 +81,6 @@ def delete_transaction(request, transaction_id):
         transaction.delete()
         
     return redirect('list_transactions')
-
 
 
 @login_required
@@ -137,16 +140,19 @@ def index(request):
  
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, email=email, password=password)
-        
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return redirect('dashboard') 
             #return HttpResponseRedirect(reverse('dashboard'))
         else:
-            messages.info(request, 'Email or password is incorrect.')
+            messages.info(request, 'Username or password is incorrect.')
+
+    else:
+        print(request.method)
+
     context={}
     return render(request, 'accounts/login.html', context)
 
