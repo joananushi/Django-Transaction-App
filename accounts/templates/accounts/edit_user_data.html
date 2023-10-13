@@ -16,11 +16,13 @@
       <label for="last_name">Last Name:</label>
       <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}" class="form-control">
     </div>
- 
+    <div class="form-group">
+      <label for="profilepic">Profile Image:</label>
+      <input type="file" name="profilepic" id="profilepic" class="form-control-file">
+    </div>
     <button type="submit" class="btn btn-primary">Save Changes</button>
   </form>
   <a href="{% url 'user_profile' pk=user.id %}" class="btn btn-secondary mt-3">Cancel</a>
-
   <hr>
   <h2>Delete User Account</h2>
   <p>If you want to delete your user account, click the button below:</p>

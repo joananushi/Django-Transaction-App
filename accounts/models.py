@@ -2,18 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 import re
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.templatetags.static import static
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 
 
-  
-
+def default_profile_pic():
+    return static("accounts/images/profile_pic.jpg")
 class User(models.Model):
     username = models.CharField(max_length=225, null=True)
     email = models.CharField(max_length=225, null=True)
     password=models.CharField(max_length=225, null=True)
     admin=models.IntegerField(default=0)
-    profilepic=models.ImageField(null=True, blank=True)
+    profilepic= models.ImageField(upload_to='images/', default=default_profile_pic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

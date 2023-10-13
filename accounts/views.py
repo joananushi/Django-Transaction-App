@@ -97,6 +97,8 @@ def edit_user_data(request, pk):
         logged_user = User.objects.get(id=pk)
         logged_user.first_name = request.POST.get('first_name')
         logged_user.last_name = request.POST.get('last_name')
+        if 'profilepic' in request.FILES:
+            logged_user.profile_image = request.FILES['profilepic']
         logged_user.save()
         return redirect('user_profile', pk=pk)
 
@@ -124,7 +126,9 @@ def register(request):
                 user_form =form.save()
                 email= form.cleaned_data.get('email')
                 group = Group.objects.get(name='users')
+                User.profilepic = 'profilepic.jpg'
                 user_form.groups.add(group)
+
                 messages.success(request, 'Account created!')
                 return redirect('login_view')
             except IntegrityError:
@@ -142,8 +146,11 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me') 
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            if not remember_me:
+                request.session.set_expiry(0)
             login(request, user)
             return redirect('dashboard') 
             #return HttpResponseRedirect(reverse('dashboard'))
