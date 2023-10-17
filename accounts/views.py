@@ -9,45 +9,52 @@ from .models import *
 from .forms import CreateUserForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import *
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from .decorators import unauthenticated_user, allowed_users, admin_only, check_user_able_to_see_page
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 
 @login_required(login_url='login_view')
 def dashboard(request):
     users = User.objects.all()
-    context={'users': users}
+    transaction= Transaction.objects.all()
+    
+    context={'users': users,
+             'transaction':transaction
+             }
 
     return render(request, 'accounts/dashboard.html', context )
 
 def usertransactions(request, pk):
     user = User.objects.get(id=pk)
-    transactions = Transaction.objects.filter(user=user)
+    user_transactions = Transaction.objects.filter(payer=user)
+   
 
     context = {
         'user': user,
-        'transactions': transactions,
+        'user_transactions': user_transactions,
+        
     }
 
     return render(request, 'accounts/user_transactions.html', context)
 
 def make_transaction(request):
     if request.method == 'POST':
-        form = TransactionForm(request.POST)
+        form = TransactionForm(request.user, request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
-            transaction.user = request.user
+            transaction.payer = request.user
+            transaction.payee = form.cleaned_data['payee']
             transaction.save()
             return redirect('usertransactions')
         else:
             form_errors = form.errors
             print(form_errors)
-            
-        
-    form = TransactionForm()
+    else:
+        form = TransactionForm(request.user)
 
     context = {'form': form}
     return render(request, 'accounts/make_transaction.html', context)

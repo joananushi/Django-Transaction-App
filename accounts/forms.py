@@ -5,6 +5,7 @@ from .models import Transaction
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.forms.widgets import PasswordInput, TextInput
+from django.shortcuts import render, redirect
 
 class CreateUserForm(UserCreationForm):
     username = forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
@@ -17,10 +18,16 @@ class CreateUserForm(UserCreationForm):
         fields=['username','first_name','last_name','email', 'password1','password2']
 
 class TransactionForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):
+        super(TransactionForm, self).__init__(*args, **kwargs)
+        self.fields['payee'].queryset = User.objects.exclude(id=user.id)
+
+    
     class Meta:
         model = Transaction
         fields = ['amount', 'description', 'category', 'payment_method', 'reference_number','attachments']
-
+        
+        
 
 
         
