@@ -41,7 +41,7 @@ class Transaction(models.Model):
             ('Failed', 'Failed'),
         ]
     )
-    payer= models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='transaction_payer')
+    user= models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='transaction_payer')
     payee= models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='transaction_receiver')
     payment_method = models.CharField(max_length=50)
     reference_number=models.CharField(max_length=50)

@@ -1,6 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Nav</a>
+        {% load static %}
+        <img style="width: 90px; height: 30px;" src="{% static 'images/logo.png' %}">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -16,10 +17,20 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'user_profile' pk=user.id %}">User Profile</a>
                 </li>
-                
-
             </ul>
         </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout_view' %}">Logout</a>
+            </li>
+        </ul>
     </div>
-    <a href="{% url 'logout_view' %}">Logout</a>
 </nav>
+
+{% comment %}
+#admin pages:
+{% if request.user.groups.filter(name='admin').exists %}
+<li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
+</li>
+{% else %} {% endcomment %}

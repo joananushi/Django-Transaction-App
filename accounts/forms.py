@@ -25,7 +25,7 @@ class TransactionForm(forms.ModelForm):
     
     class Meta:
         model = Transaction
-        fields = ['amount', 'description', 'category', 'payment_method', 'reference_number','attachments']
+        fields = ['amount', 'description', 'category','payee', 'payment_method', 'reference_number','attachments']
         
         
 

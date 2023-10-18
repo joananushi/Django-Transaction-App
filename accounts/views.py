@@ -14,7 +14,7 @@ from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from .decorators import unauthenticated_user, allowed_users, admin_only, check_user_able_to_see_page
 from datetime import datetime, timedelta
-from django.db.models import Q
+
 
 
 @login_required(login_url='login_view')
@@ -30,23 +30,26 @@ def dashboard(request):
 
 def usertransactions(request, pk):
     user = User.objects.get(id=pk)
-    user_transactions = Transaction.objects.filter(payer=user)
-   
-
+    user_transactions = Transaction.objects.all()
+    
+    # # Loop through each transaction and set the payer attribute to the logged-in user
+    # for transaction in user_transactions:
+    #     transaction.payer = request.user
+    
     context = {
         'user': user,
         'user_transactions': user_transactions,
-        
     }
 
     return render(request, 'accounts/user_transactions.html', context)
+
 
 def make_transaction(request):
     if request.method == 'POST':
         form = TransactionForm(request.user, request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
-            transaction.payer = request.user
+            transaction.user = request.user
             transaction.payee = form.cleaned_data['payee']
             transaction.save()
             return redirect('usertransactions')
@@ -76,7 +79,7 @@ def edit_transaction(request, transaction_id):
             form = TransactionForm(instance=transaction)
 
         context = {'form': form}
-        return render(request, 'accounts/edit_transaction.html', context)
+        return render(request, 'accounts/edit_transaction.html', context, date_limit)
     else:
         return redirect('list_transactions')
 
@@ -87,7 +90,7 @@ def delete_transaction(request, transaction_id):
     if transaction.date > date_limit:
         transaction.delete()
         
-    return redirect('list_transactions')
+    return redirect('list_transactions', date_limit)
 
 
 @login_required
@@ -159,16 +162,15 @@ def login_view(request):
             if not remember_me:
                 request.session.set_expiry(0)
             login(request, user)
-            return redirect('dashboard') 
-            #return HttpResponseRedirect(reverse('dashboard'))
+            return redirect('dashboard')  
+        #     if user.groups.filter(name='admin').exists():
+        #         return redirect('dashboard')  # Redirect admin to the dashboard
+        #     else:
+        #         return redirect('usertransactions')  # Redirect non-admin to the transaction page
         else:
             messages.info(request, 'Username or password is incorrect.')
 
-    else:
-        print(request.method)
-
-    context={}
-    return render(request, 'accounts/login.html', context)
+    return render(request, 'accounts/login.html')
 
 
 

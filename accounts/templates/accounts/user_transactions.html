@@ -1,12 +1,13 @@
 {% extends 'accounts/main.html' %}
 
 {% block content %}
-    <h1>Transaction Page</h1>
-    <h2>User: {{ user.first_name }}</h2>
+   <h2 style="color: #60EFFF;">Your Transactions, {{ user.first_name }}</h2>
+
+
     <!-- <h3>Balance: ${{ balance }}</h3> -->
    
    {% if user_transactions %}
-        <table>
+        <table class="table table-hover table-dark table-striped">
         <thead>
             <tr>
                 <th>Date</th>
