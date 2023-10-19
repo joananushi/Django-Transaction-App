@@ -21,9 +21,11 @@ from datetime import datetime, timedelta
 def dashboard(request):
     users = User.objects.all()
     transaction= Transaction.objects.all()
+    status_choices = Transaction._meta.get_field('status').choices
     
     context={'users': users,
-             'transaction':transaction
+             'transaction':transaction,
+             'status_choices':status_choices
              }
 
     return render(request, 'accounts/dashboard.html', context )
@@ -103,7 +105,7 @@ def user_profile(request, pk):
 @login_required
 def edit_user_data(request, pk):
     if request.method == 'POST':
-       
+
         logged_user = User.objects.get(id=pk)
         logged_user.first_name = request.POST.get('first_name')
         logged_user.last_name = request.POST.get('last_name')
@@ -128,47 +130,54 @@ def delete_user(request, pk):
     return render(request, 'accounts/delete_user.html', context)
 
 def register(request):
-    form = CreateUserForm()
-    if request.method == 'POST':
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            try:
-                user_form =form.save()
-                email= form.cleaned_data.get('email')
-                group = Group.objects.get(name='users')
-                User.profilepic = 'profilepic.jpg'
-                user_form.groups.add(group)
+    if request.user.is_authenticated:
+        return redirect('dashboard') 
+    else:
+        form = CreateUserForm()
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            if form.is_valid():
+                try:
+                    user_form =form.save()
+                    email= form.cleaned_data.get('email')
+                    group = Group.objects.get(name='user')
+                    User.profilepic = 'profilepic.jpg'
+                    user_form.groups.add(group)
+                    
 
-                messages.success(request, 'Account created!')
-                return redirect('login_view')
-            except IntegrityError:
-                messages.error(request, 'Username already exists. Please choose a different username.')
+                    messages.success(request, 'Account created!')
+                    return redirect('login_view')
+                except IntegrityError:
+                    messages.error(request, 'Username already exists. Please choose a different username.')
 
 
 
-    context = {'form': form}
+        context = {'form': form}
     return render(request, 'accounts/register.html', context)
     
 def index(request):
     return redirect('login_view')
  
 def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me') 
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            if not remember_me:
-                request.session.set_expiry(0)
-            login(request, user)
-            return redirect('dashboard')  
-        #     if user.groups.filter(name='admin').exists():
-        #         return redirect('dashboard')  # Redirect admin to the dashboard
-        #     else:
-        #         return redirect('usertransactions')  # Redirect non-admin to the transaction page
-        else:
-            messages.info(request, 'Username or password is incorrect.')
+    if request.user.is_authenticated:
+        return redirect('dashboard') 
+    else:
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            remember_me = request.POST.get('remember_me') 
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                if not remember_me:
+                    request.session.set_expiry(0)
+                login(request, user)
+                return redirect('dashboard')  
+            #     if user.groups.filter(name='admin').exists():
+            #         return redirect('dashboard')  # Redirect admin to the dashboard
+            #     else:
+            #         return redirect('usertransactions')  # Redirect non-admin to the transaction page
+            else:
+                messages.info(request, 'Username or password is incorrect.')
 
     return render(request, 'accounts/login.html')
 

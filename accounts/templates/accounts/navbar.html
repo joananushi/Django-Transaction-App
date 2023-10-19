@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style='box-shadow: 0px 5px 5px rgba(0, 128, 0, 0.5);'>
     <div class="container-fluid">
         {% load static %}
         <img style="width: 90px; height: 30px;" src="{% static 'images/logo.png' %}">
@@ -29,7 +29,7 @@
 
 {% comment %}
 #admin pages:
-{% if request.user.groups.filter(name='admin').exists %}
+ {% if request.user.groups.filter(name='admin').exists %}
 <li class="nav-item">
     <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
 </li>
