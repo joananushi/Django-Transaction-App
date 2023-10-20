@@ -4,15 +4,14 @@
 
 <h1>Make a Transaction</h1>
 
-    <form method="post" action="{% url 'make_transaction' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
+<form method="post" action="{% url 'make_transaction' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 
-    <a href="{% url 'usertransactions' pk=request.user.id %}">Back to Transactions</a>
-
-
+<a href="{% url 'usertransactions' pk=request.user.id %}" class="btn btn-secondary">Back to Transactions</a>
 
 
-{%  endblock %}
+
+{%  endblock %} 

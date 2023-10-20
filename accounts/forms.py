@@ -26,7 +26,15 @@ class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
         fields = ['amount', 'description', 'category','payee', 'payment_method', 'reference_number','attachments']
-        
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'payee': forms.Select(attrs={'class': 'form-control'}),
+            'payment_method': forms.TextInput(attrs={'class': 'form-control'}),
+            'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'attachments': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
         
 
 

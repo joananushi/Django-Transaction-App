@@ -22,10 +22,14 @@ def dashboard(request):
     users = User.objects.all()
     transaction= Transaction.objects.all()
     status_choices = Transaction._meta.get_field('status').choices
+    is_admin = request.user.groups.filter(name='admin').exists() 
     
     context={'users': users,
              'transaction':transaction,
-             'status_choices':status_choices
+             'status_choices':status_choices,
+             'is_admin':is_admin,
+             'user': request.user
+             
              }
 
     return render(request, 'accounts/dashboard.html', context )
@@ -33,6 +37,7 @@ def dashboard(request):
 def usertransactions(request, pk):
     user = User.objects.get(id=pk)
     user_transactions = Transaction.objects.all()
+    is_admin = request.user.groups.filter(name='admin').exists() 
     
     # # Loop through each transaction and set the payer attribute to the logged-in user
     # for transaction in user_transactions:
@@ -41,6 +46,7 @@ def usertransactions(request, pk):
     context = {
         'user': user,
         'user_transactions': user_transactions,
+         'is_admin':is_admin
     }
 
     return render(request, 'accounts/user_transactions.html', context)
@@ -160,7 +166,10 @@ def index(request):
  
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('dashboard') 
+        if request.user.groups.filter(name='admin').exists():
+                    return redirect('dashboard')  # Redirect admin to the dashboard
+        else:
+                    return redirect('usertransactions', pk=user.pk)
     else:
         if request.method == 'POST':
             username = request.POST.get('username')
@@ -171,11 +180,10 @@ def login_view(request):
                 if not remember_me:
                     request.session.set_expiry(0)
                 login(request, user)
-                return redirect('dashboard')  
-            #     if user.groups.filter(name='admin').exists():
-            #         return redirect('dashboard')  # Redirect admin to the dashboard
-            #     else:
-            #         return redirect('usertransactions')  # Redirect non-admin to the transaction page
+                if user.groups.filter(name='admin').exists():
+                    return redirect('dashboard')  # Redirect admin to the dashboard
+                else:
+                    return redirect('usertransactions', pk=user.pk)  # Redirect non-admin to the transaction page
             else:
                 messages.info(request, 'Username or password is incorrect.')
 

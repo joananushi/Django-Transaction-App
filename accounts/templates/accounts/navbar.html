@@ -2,21 +2,24 @@
     <div class="container-fluid">
         {% load static %}
         <img style="width: 90px; height: 30px;" src="{% static 'images/logo.png' %}">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
+                {% if is_admin %}
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_profile' pk=user.id %}">User Profile</a>
+                </li>
+                {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'usertransactions' pk=user.id %}">Transactions</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'user_profile' pk=user.id %}">User Profile</a>
                 </li>
+                {% endif %}
             </ul>
         </div>
         <ul class="navbar-nav">
@@ -26,6 +29,7 @@
         </ul>
     </div>
 </nav>
+
 
 {% comment %}
 #admin pages:
