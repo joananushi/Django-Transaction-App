@@ -1,21 +1,22 @@
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from .models import Transaction
+from .models import Transaction, User
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.forms.widgets import PasswordInput, TextInput
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate
 
-class CreateUserForm(UserCreationForm):
+class CreateUserForm(forms.ModelForm):
     username = forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     first_name=forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     last_name=forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     email = forms.EmailField(max_length=254, required=True, help_text='Required. Enter a valid email address.')
-
+    password=forms.PasswordInput()
+    
     class Meta:
         model= User
-        fields=['username','first_name','last_name','email', 'password1','password2']
+        fields=['username','first_name','last_name','email', 'password']
 
 class TransactionForm(forms.ModelForm):
     def __init__(self, user, *args, **kwargs):
@@ -36,6 +37,26 @@ class TransactionForm(forms.ModelForm):
             'attachments': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
         
+
+class UserLoginForm(forms.Form):
+    username = forms.CharField(label="Username")
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    def clean(self, *args, **kwargs):
+        cleaned_data = super().clean()
+        username = cleaned_data.get("username")
+        password = cleaned_data.get("password")
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user is None:
+                self.add_error('username', "Account Does Not Exist.")
+            elif not user.check_password(password):
+                self.add_error('password', "Password Does not Match.")
+            elif not user.is_active:
+                self.add_error(None, "Account is not Active.")
+
+        return cleaned_data
 
 
         
