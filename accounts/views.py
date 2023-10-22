@@ -57,12 +57,14 @@ def usertransactions(request, pk):
     user = User.objects.get(id=pk)
     user_transactions = Transaction.objects.filter(user=pk)
     is_admin = 0
+    date_limit = datetime.now() + timedelta(days=5)
    
 
     context = {
         'user': user,
         'user_transactions': user_transactions,
-         'is_admin':is_admin
+         'is_admin':is_admin,
+         'date_limit': date_limit
          
     }
 
@@ -89,33 +91,30 @@ def make_transaction(request):
 
 
 @login_required
-def edit_transaction(request, transaction_id):
-    transaction = get_object_or_404(Transaction, id=transaction_id)
-
-    date_limit = datetime.now() - timedelta(days=5)
-    if transaction.date > date_limit:
-        if request.method == 'POST':
-            form = TransactionForm(request.POST, instance=transaction)
-            if form.is_valid():
-                form.save()
-                return redirect('usertransactions')
-        else:
-            form = TransactionForm(instance=transaction)
-
-        context = {'form': form,
-                   'date_limit': date_limit}
-        return render(request, 'accounts/edit_transaction.html', context)
+def edit_transaction(request, transaction_id=None):
+    if transaction_id:
+        # Editing an existing transaction
+        transaction = get_object_or_404(Transaction, id=transaction_id)
+        form = TransactionForm(request.user, instance=transaction)
     else:
-        return redirect('list_transactions')
+        # Creating a new transaction
+        transaction = None
+        form = TransactionForm(request.user)
+
+    if request.method == 'POST':
+        form = TransactionForm(request.user, request.POST, instance=transaction)
+        if form.is_valid():
+            form.save()
+            return redirect('usertransactions' , pk=request.user.pk)
+
+    context = {'form': form, 'transaction': transaction}
+    return render(request, 'accounts/edit_transaction.html', context)
 
 @login_required
 def delete_transaction(request, transaction_id):
     transaction = get_object_or_404(Transaction, id=transaction_id)
-    date_limit = datetime.now() - timedelta(days=5)
-    if transaction.date > date_limit:
-        transaction.delete()
-        
-    return redirect('list_transactions', date_limit)
+    transaction.delete()
+    return redirect('usertransactions' , pk=request.user.pk)
 
 
 @login_required

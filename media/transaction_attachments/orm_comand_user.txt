@@ -1,0 +1,16 @@
+from users.models import Users
+User.objects.all()
+ User.objects.create(first_name='Jane', last_name='Doe', email='janedoe@gmail.com', age=24)
+User.objects.first()
+User.objects.first().__dict__
+User.objects.create(first_name='Joe', last_name='Doee', email='joedoe@gmail.com', age=41)
+User.objects.create(first_name='May', last_name='Done', email='maydone@gmail.com', age=33)
+User.objects.all()
+User.objects.all().values()
+ User.objects.last()
+>>> c = User.objects.get(id=3)
+>>> c.last_name='Pancakes'
+>>> c.save()
+
+ c = User.objects.get(id=2)
+>>> c.delete()

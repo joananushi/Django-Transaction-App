@@ -16,7 +16,7 @@
                 <th>Payment method</th>
                 <th>Reference number</th>
                 <th>Attachments</th>
-                {% if transaction.date > date_limit %}
+                {% if date_limit %}
                 <th>Actions</th>
                 {% endif %}
             </tr>
@@ -33,7 +33,7 @@
                 <td>{{ transaction.reference_number }}</td>
                 <td>{{ transaction.attachments }}</td>
                 <td>
-                    {% if transaction.date > date_limit %}
+                    {% if date_limit %}
                         <a href="{% url 'edit_transaction' transaction.id %}">Edit</a>
                         <a href="{% url 'delete_transaction' transaction.id %}">Delete</a>
                     {% endif %}
