@@ -4,7 +4,7 @@
 
 <h1>Make a Transaction</h1>
 
-<form method="post" action="{% url 'make_transaction' %}">
+<form method="post" action="{% url 'make_transaction' %}" enctype='multipart/form-data'>
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-primary">Submit</button>

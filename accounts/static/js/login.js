@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const loginTab = document.getElementById("login-tab");
     const registerTab = document.getElementById("register-tab");
 
-    // Initially, hide the registration form
     registerForm.style.display = "none";
 
     loginTab.addEventListener("click", () => {

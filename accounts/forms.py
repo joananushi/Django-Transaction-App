@@ -1,24 +1,28 @@
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import Transaction, User
+
+from accounts.backends import User
+from .models import Transaction
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.forms.widgets import PasswordInput, TextInput
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
+
 
 class CreateUserForm(forms.ModelForm):
     username = forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     first_name=forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     last_name=forms.CharField(max_length=30, required=True, help_text='Required. 30 characters or fewer.')
     email = forms.EmailField(max_length=254, required=True, help_text='Required. Enter a valid email address.')
-    password=forms.PasswordInput()
+    password = forms.CharField(widget=forms.PasswordInput())
     
     class Meta:
-        model= User
+        model= get_user_model()
         fields=['username','first_name','last_name','email', 'password']
 
 class TransactionForm(forms.ModelForm):
+    User = get_user_model()
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
         self.fields['payee'].queryset = User.objects.exclude(id=user.id)
@@ -58,10 +62,3 @@ class UserLoginForm(forms.Form):
 
         return cleaned_data
 
-
-        
-# class LoginForm(AuthenticationForm):
-#     first_name = forms.CharField(widget=TextInput())
-#     last_name = forms.CharField(widget=TextInput())
-#     email = forms.CharField(widget=TextInput())
-#     password = forms.CharField(widget=PasswordInput())

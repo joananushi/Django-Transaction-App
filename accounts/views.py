@@ -1,22 +1,41 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from .forms import TransactionForm
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from .models import *
 from .forms import CreateUserForm, UserLoginForm
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from django.contrib.auth.models import *
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
 from .decorators import unauthenticated_user
 from datetime import datetime, timedelta
 from django.http import Http404, HttpResponse
+from django.http import JsonResponse
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from .utils import delete_image
 
 
+User=get_user_model()
 
+
+@csrf_exempt
+def update_transaction_status(request):
+    if request.method == 'POST':
+        transaction_id = request.POST.get('transaction_id')
+        new_status = request.POST.get('new_status')
+        try:
+            transaction = Transaction.objects.get(pk=transaction_id)
+            transaction.status = new_status
+            transaction.save()
+            return JsonResponse({'success': True})
+        except Transaction.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Transaction not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
 def dashboard(request):
     users = User.objects.all()
     transaction= Transaction.objects.all()
@@ -33,10 +52,10 @@ def dashboard(request):
              }
 
     return render(request, 'accounts/dashboard.html', context )
-
+@login_required
 def usertransactions(request, pk):
     user = User.objects.get(id=pk)
-    user_transactions = Transaction.objects.all()
+    user_transactions = Transaction.objects.filter(user=pk)
     is_admin = 0
    
 
@@ -49,16 +68,16 @@ def usertransactions(request, pk):
 
     return render(request, 'accounts/user_transactions.html', context)
 
-
+@login_required
 def make_transaction(request):
     if request.method == 'POST':
-        form = TransactionForm(request.user, request.POST)
+        form = TransactionForm(request.user, request.POST, request.FILES)
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.user = request.user
             transaction.payee = form.cleaned_data['payee']
             transaction.save()
-            return redirect('usertransactions')
+            return redirect('usertransactions', pk=request.user.pk)
         else:
             form_errors = form.errors
             print(form_errors)
@@ -68,33 +87,6 @@ def make_transaction(request):
     context = {'form': form}
     return render(request, 'accounts/make_transaction.html', context)
 
-# def make_transaction(request):
-#     if request.method == 'POST':
-#         form = TransactionForm(request.user, request.POST)
-#         if form.is_valid():
-#             transaction = form.save(commit=False)
-#             transaction.user = request.user
-
-#             # Retrieve the payee User instance based on the username or other identifier.
-#             payee_username = form.cleaned_data['payee']
-#             try:
-#                 payee_user = User.objects.get(username=payee_username)
-#                 if payee_user:  # Check if the user exists
-#                     transaction.payee = payee_user
-#                     transaction.save()
-#                     return redirect('usertransactions')
-#                 else:
-#                     raise Http404("Payee not found")
-#             except User.DoesNotExist:
-#                 raise Http404("Payee not found")  # Handle the case where the payee user doesn't exist.
-#         else:
-#             form_errors = form.errors
-#             print(form_errors)
-#     else:
-#         form = TransactionForm(request.user)
-
-#     context = {'form': form}
-#     return render(request, 'accounts/make_transaction.html', context)
 
 @login_required
 def edit_transaction(request, transaction_id):
@@ -110,8 +102,9 @@ def edit_transaction(request, transaction_id):
         else:
             form = TransactionForm(instance=transaction)
 
-        context = {'form': form}
-        return render(request, 'accounts/edit_transaction.html', context, date_limit)
+        context = {'form': form,
+                   'date_limit': date_limit}
+        return render(request, 'accounts/edit_transaction.html', context)
     else:
         return redirect('list_transactions')
 
@@ -134,19 +127,21 @@ def user_profile(request, pk):
 
 @login_required
 def edit_user_data(request, pk):
+    logged_user = User.objects.get(id=pk)
     if request.method == 'POST':
-        logged_user = User.objects.get(id=pk)
         logged_user.first_name = request.POST.get('first_name')
         logged_user.last_name = request.POST.get('last_name')
         if 'profilepic' in request.FILES:
+            # Delete the old profile image
+            if logged_user.profile_image:
+                delete_image(logged_user.profilepic.path)
             logged_user.profile_image = request.FILES['profilepic']
-            
         logged_user.save()
         return redirect('user_profile', pk=pk)
     else:
-        logged_user = User.objects.get(id=pk)
         context = {'user': logged_user}
         return render(request, 'accounts/edit_user_data.html', context)
+
 @login_required
 def delete_user(request, pk):
     user_to_delete = User.objects.get(id=pk)
@@ -169,10 +164,15 @@ def register(request):
                 try:
                     user = form.save(commit=False) 
                     user.admin = 0
+                    user.is_active=True
+                    password = form.cleaned_data.get("password")
+                    user.set_password(password)
                     user.save()
-                    email= form.cleaned_data.get('email')
+                    
                     user.profilepic = 'profilepic.jpg'
                     if user.password == request.POST['password2']:
+                        new_user = authenticate(username=user.username, password=password)
+                        login(request, new_user, backend='accounts.backends.AccountNoBackend')
                         messages.success(request, 'Account created!')
                         return redirect('login_view')
                     else:
@@ -185,97 +185,30 @@ def register(request):
     
 def index(request):
     return redirect('login_view')
- 
-
-# def login_view(request):
-#     if request.user.is_authenticated:
-#         if request.user.admin == 1:
-#             return redirect('dashboard')  # Redirect admin to the dashboard
-#         else:
-#             return redirect('usertransactions', pk=request.user.pk)  # Redirect non-admin to the transaction page
-#     else:
-#         if request.method == 'POST':
-#             username = request.POST.get('username')
-#             password = request.POST.get('password')
-#             remember_me = request.POST.get('remember_me')
-#             print(f"Username: {username}, Password: {password}")
-#             user = authenticate(request, username=username, password=password)
-            
-#             if user is not None:
-
-#                 login(request, user , backend='accounts.backends.ModelBackend')
-#                 print(f"Authenticated user: {user.username}")
-                
-#                 if not remember_me:
-#                     request.session.set_expiry(0)
-#                 if user.admin == 1:
-#                     return redirect('dashboard')  # Redirect admin to the dashboard
-#                 else:
-#                     return redirect('usertransactions', pk=request.user.pk)  # Redirect non-admin to the transaction page
-#             else:
-#                 messages.error(request, 'Username or password is incorrect.')
-
-#     return render(request, 'accounts/login.html')
-# _____________________________________________________________________________
-
 
 def login_view(request):
     if request.user.is_authenticated:
-        if request.is_staff:
-            return redirect('dashboard')  # Redirect admin to the dashboard
+        if request.user.admin == 1:
+            return redirect('dashboard')
         else:
-            return redirect('usertransactions', pk=request.user.pk)  # Redirect non-admin to the transaction page
+           return redirect('usertransactions', pk=request.user.pk)
     else:
-        if request.method == 'POST':
-            form = UserLoginForm(request.POST)
-            if form.is_valid():
-                username = form.cleaned_data.get("username")
-                password = form.cleaned_data.get("password")
-                remember_me = request.POST.get('remember_me')
+        form = UserLoginForm(request.POST or None)
 
-                user = authenticate(username=username, password=password)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            
+            user = authenticate(username=username, password=password)
+            login(request, user, backend='accounts.backends.AccountNoBackend')
+            messages.success(request, 'Welcome, {}!' .format(user.first_name))
+            if user.admin == 1:
+                     return redirect('dashboard')  # Redirect admin to the dashboard
+            else:
+                     return redirect('usertransactions', pk=request.user.pk)
 
-                if user is not None:
-                    login(request, user)
-                    if not remember_me:
-                        request.session.set_expiry(0)
-                    messages.success(request, 'Welcome!')
-                    if user.is_staff:
-                        return redirect('dashboard')  # Redirect admin to the dashboard
-                    else:
-                        return redirect('usertransactions', pk=user.pk)  # Redirect non-admin to the transaction page
-                else:
-                    messages.error(request, 'Username or password is incorrect.')
-        else:
-            form = UserLoginForm()
-
-        context = {"form": form}
-        return render(request, 'accounts/login.html', context)
-
-
-
-
-
-
-
-
-
-        # form = UserLoginForm(request.POST or None)
-
-        # if form.is_valid():
-        #     account_no = form.cleaned_data.get("account_no")
-        #     password = form.cleaned_data.get("password")
-        #     # authenticate with Account No & Password
-        #     user = authenticate(account_no=account_no, password=password)
-        #     login(request, user, backend='accounts.backends.AccountNoBackend')
-        #     messages.success(request, 'Welcome, {}!' .format(user.full_name))
-        #     return redirect("home")
-
-        # context = {"form": form,
-        #            "title": "Load Account Details",
-        #            }
-
-        # return render(request, "accounts/form.html", context)
+    context = {"form": form}
+    return render(request, 'accounts/login.html', context)
 
 
 def logout_view(request):

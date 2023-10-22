@@ -9,17 +9,14 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user_profile' pk=user.id %}">User Profile</a>
-                </li>
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'usertransactions' pk=user.id %}">Transactions</a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'user_profile' pk=user.id %}">User Profile</a>
                 </li>
-                {% endif %}
             </ul>
         </div>
         <ul class="navbar-nav">
@@ -29,12 +26,3 @@
         </ul>
     </div>
 </nav>
-
-
-{% comment %}
-#admin pages:
- {% if request.user.groups.filter(name='admin').exists %}
-<li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
-</li>
-{% else %} {% endcomment %}

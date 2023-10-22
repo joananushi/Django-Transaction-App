@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 import re
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.templatetags.static import static
+from .managers import UserManager
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 
@@ -10,7 +11,7 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 def default_profile_pic():
     return static("accounts/images/profile_pic.jpg")
 
-class User(models.Model):
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=225, null=True, unique=True)
     first_name= models.CharField(max_length=225, null=True)
     last_name= models.CharField(max_length=225, null=True)
@@ -20,6 +21,14 @@ class User(models.Model):
     profilepic= models.ImageField(upload_to='images/', default=default_profile_pic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_staff = models.BooleanField( default=False)
+    is_active = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+
+    objects=UserManager()
+
+    REQUIRED_FIELDS=[]
+    USERNAME_FIELD='username'
     
     def __str__(self) :
         return self.username

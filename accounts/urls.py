@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 
+
 urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('usertransactions/<int:pk>/', views.usertransactions, name='usertransactions'),
@@ -15,6 +16,9 @@ urlpatterns = [
     path('make-transaction/', views.make_transaction, name='make_transaction'),
     path('edit-transaction/<int:transaction_id>/', views.edit_transaction, name='edit_transaction'),
     path('delete-transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
+    path('update-transaction-status/', views.update_transaction_status, name='update_transaction_status'),
+    
+
 ]
 
 

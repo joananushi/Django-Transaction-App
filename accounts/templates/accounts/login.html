@@ -144,40 +144,40 @@
 				localStorage.removeItem('checkbox');
 			}
 		});
-{% comment %} 
-		<!--  AJAX Login Form Submission -->
+// {% comment %} 
+// 		<!--  AJAX Login Form Submission -->
 		
-			$(document).ready(function () {
-				$("form").submit(function (event) {
-					event.preventDefault(); 
+// 			$(document).ready(function () {
+// 				$("form").submit(function (event) {
+// 					event.preventDefault(); 
 		
 					
-					var formData = {
-						username: $("#username").val(),
-						password: $("#password").val(),
-						remember_me: $("#rememberMe").is(":checked")
-					};
+// 					var formData = {
+// 						username: $("#username").val(),
+// 						password: $("#password").val(),
+// 						remember_me: $("#rememberMe").is(":checked")
+// 					};
 		
-					// Send the AJAX request to the server
-					$.ajax({
-						type: "POST",
-						url: "{% url 'login_view' %}",
-						data: formData,
-						success: function (data) {
-							// Handle the server's response (e.g., redirect after successful login)
-							// You can update the page content without a full reload here.
-						},
-						error: function (data) {
-							// Handle errors (e.g., display an error message)
-						}
-					});
-				});
-			});
+// 					// Send the AJAX request to the server
+// 					$.ajax({
+// 						type: "POST",
+// 						url: "{% url 'login_view' %}",
+// 						data: formData,
+// 						success: function (data) {
+// 							// Handle the server's response (e.g., redirect after successful login)
+// 							// You can update the page content without a full reload here.
+// 						},
+// 						error: function (data) {
+// 							// Handle errors (e.g., display an error message)
+// 						}
+// 					});
+// 				});
+// 			});
 	
-		 {% endcomment %}
+// 		 {% endcomment %}
 		
 	</script>
-	}
+	
 
 	
 

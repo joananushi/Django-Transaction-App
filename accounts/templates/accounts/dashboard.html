@@ -28,14 +28,25 @@
             <td>{{ t.reference_number }}</td>
             <td>{{ t.attachments }}</td>
             <td>
-                <select name="status" id="status">
-                    {% for status_option in status_choices %}
-                      <option value="{{ status_option.0 }}" {% if status_option.0 == transaction.status %}selected{% endif %}>
-                        {{ status_option.1 }}
-                      </option>
-                    {% endfor %}
-                  </select>
-
+{% comment %}                
+                    <select name="status" id="status-dropdown" data-transaction-id="{{ t.id }}">
+                        {% for status_option in status_choices %}
+                            <option value="{{ status_option.0 }}" {% if status_option.0 == t.status %}selected{% endif %}>
+                                {{ status_option.1 }}
+                            </option>
+                        {% endfor %}
+                    </select> 
+                    <button id="update-status-button" data-transaction-id="{{ t.id }}">Update Status</button> {% endcomment %}
+                    <select name="status" class="status-dropdown" data-transaction-id="{{ t.id }}">
+                        {% for status_option in status_choices %}
+                            <option value="{{ status_option.0 }}" {% if status_option.0 == t.status %}selected{% endif %}>
+                                {{ status_option.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button class="update-status-button" data-transaction-id="{{ t.id }}">Update Status</button>
+                    
+                
             </td>
                
         </tr>
@@ -51,5 +62,70 @@
 
         {% endfor %}
     </ul>
+    <script>
+        $(document).ready(function() {
+            // Handle the click event for the "Update Status" button
+            $('.update-status-button').click(function() {
+                var transaction_id = $(this).data('transaction-id');
+                var new_status = $(this).prev('.status-dropdown').val();
+    
+                $.ajax({
+                    url: '{% url "update_transaction_status" %}',
+                    type: 'POST',
+                    data: {
+                        'transaction_id': transaction_id,
+                        'new_status': new_status
+                    },
+                    success: function(data) {
+                        if (data.success) {
+                            // Successfully updated status
+                            console.log('Status updated successfully');
+                        } else {
+                            // Handle error, e.g., transaction not found
+                            console.error('Error updating status:', data.error);
+                        }
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        // Handle AJAX error
+                        console.error('AJAX error:', textStatus);
+                    }
+                });
+            });
+        });
+    </script>
+    
+
+    {% comment %} <script>
+        $(document).ready(function() {
+            $('#status-dropdown').change(function() {
+                var transaction_id = $(this).data('transaction-id');
+                var new_status = $(this).val();
+        
+                $.ajax({
+                    url: '{% url "update_transaction_status" %}',
+                    type: 'POST',
+                    data: {
+                        'transaction_id': transaction_id,
+                        'new_status': new_status
+                    },
+                    success: function(data) {
+                        if (data.success) {
+                            // Successfully updated status
+                            console.log('Status updated successfully');
+                        } else {
+                            // Handle error, e.g., transaction not found
+                            console.error('Error updating status:', data.error);
+                        }
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        // Handle AJAX error
+                        console.error('AJAX error:', textStatus);
+                    }
+                });
+            });
+        });
+        </script> {% endcomment %}
+        
+        
 
 {% endblock %}
